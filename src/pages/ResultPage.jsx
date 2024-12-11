@@ -81,4 +81,5 @@ const Text_Input = ({ addSearchToHistory, username }) => {
   );
 };
 
+
 export default Text_Input;
