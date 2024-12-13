@@ -26,7 +26,7 @@ const Result = ({ searchHistory = [] }) => {
     const location = useLocation();
     const [groupedHistory, setGroupedHistory] = useState({});
     const [latestSearch, setLatestSearch] = useState({ text: null, url: null });
-    const [score, setScore] = useState(0);
+    const [score, setScore] = useState(location.state?.score || 0);
     const [apiResponse, setApiResponse] = useState(null);
 
     useEffect(() => {
@@ -34,19 +34,25 @@ const Result = ({ searchHistory = [] }) => {
             try {
                 const searchText = location.state?.searchText || "";
 
+                // New API request using the provided URL
                 const response = await fetch('https://fact-checking-assistant.onrender.com/factcheck', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
                     },
-                    body: JSON.stringify({ fact: searchText })
+                    body: JSON.stringify({ fact: searchText }),
                 });
+                
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
 
                 const data = await response.json();
                 setApiResponse(data);
+                setScore(data.score || 0); // Update score based on the API response
             } catch (error) {
                 console.error('Full error details:', error);
+                setScore(50); // Default score added in case of failure
             }
         };
 

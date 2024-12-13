@@ -19,6 +19,7 @@
     "express": "^4.21.2",
     "firebase": "^11.0.1",
     "http-proxy-middleware": "^3.0.3",
+    "lodash": "^4.17.21",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
@@ -35,6 +36,5 @@
     "tailwindcss": "^3.4.14",
     "vite": "^5.4.10"
   },
-  "proxy": "http://localhost:3000"
-
+  "proxy": "https://fact-checking-assistant.onrender.com/factcheck"
 }

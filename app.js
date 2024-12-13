@@ -3,17 +3,38 @@ const cors = require('cors');
 
 const app = express();
 
-// Enable CORS for the correct origin (React app's URL)
 app.use(cors({
-  origin: '*',  // Allow only requests from your React app's URL
+  origin: 'https://your-react-app-url.com', 
+  methods: ['POST'],
+  allowedHeaders: ['Content-Type']
 }));
 
-app.use(express.json());  // To parse JSON requests
+app.use(express.json());
 
 app.post('/factcheck', (req, res) => {
-  res.json({ message: 'Fact check complete!' });
+  const { fact } = req.body;
+
+  // Sadə fact-checking məntiqini buraya əlavə edin
+  const score = calculateFactScore(fact);
+
+  res.json({
+    score: score,
+    message: 'Fact check completed',
+    details: 'Əlavə məlumatlar'
+  });
 });
 
-app.listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
+function calculateFactScore(fact) {
+  // Faktın etibarlılığını qiymətləndirən sadə alqoritm
+  const keywords = ['fake', 'false', 'true', 'verified'];
+  const score = keywords.some(keyword => 
+    fact.toLowerCase().includes(keyword)
+  ) ? 80 : 50;
+
+  return score;
+}
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

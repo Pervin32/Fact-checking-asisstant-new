@@ -1,21 +1,21 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-
+// vite.config.js (Əgər Viteişlədirsinizsə)
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: [{ find: '@', replacement: '/src' }],
-  },
   server: {
     proxy: {
       '/factcheck': {
-      target: 'https://fact-checking-assistant.onrender.com',
-      changeOrigin: true,
-      secure: false,
-      },
-    },
-    hmr: {
-      overlay: false,
-    },
+        target: 'https://fact-checking-assistant.onrender.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/factcheck/, '')
+      }
+    }
+  }
+});
+
+// Yaxud React komponentlərində
+const response = await fetch('/factcheck', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
   },
+  body: JSON.stringify({ fact: searchText })
 });
