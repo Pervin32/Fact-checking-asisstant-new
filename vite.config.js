@@ -1,5 +1,12 @@
-// vite.config.js (Əgər Viteişlədirsinizsə)
+import { defineConfig } from 'vite';
+import path from 'path';
+
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src') // 'src' qovluğuna yönləndirmə
+    }
+  },
   server: {
     proxy: {
       '/factcheck': {
@@ -9,13 +16,4 @@ export default defineConfig({
       }
     }
   }
-});
-
-// Yaxud React komponentlərində
-const response = await fetch('/factcheck', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({ fact: searchText })
 });

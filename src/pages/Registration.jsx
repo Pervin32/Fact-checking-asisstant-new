@@ -8,14 +8,11 @@ import 'react-toastify/dist/ReactToastify.css'; // React-toastify stilini daxil 
 import google from '../assets/img/gmail.svg'; // Google şəkli
 import facebook from '../assets/img/face.svg'; // Facebook şəkli
 
-/// Import the functions you need from the SDKs you need
+/// Firebase SDK-larını daxil edirik
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase konfiqurasiyası
 const firebaseConfig = {
   apiKey: "AIzaSyAqsWZ5_ri2DBim6cgtMn2ir9w8t3XXa-8",
   authDomain: "fact-checking-asisstant.firebaseapp.com",
@@ -26,7 +23,7 @@ const firebaseConfig = {
   measurementId: "G-BLQXDLD0PP"
 };
 
-// Initialize Firebase
+// Firebase-i başlatmaq
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
@@ -183,4 +180,4 @@ const Registration = () => {
   );
 };
 
-export default Registration; 
+export default Registration;
