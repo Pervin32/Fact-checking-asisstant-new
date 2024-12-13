@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import google from '../assets/img/gmail.svg';
-import facebook from '../assets/img/face.svg';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
-import { getAnalytics } from 'firebase/analytics';
+import React, { useState } from 'react'; // React və useState funksiyasını daxil edirik
+import { Link, useNavigate } from 'react-router-dom'; // React Router-dan Link və navigate funksiyalarını istifadə edirik
+import google from '../assets/img/gmail.svg'; // Google şəkli
+import facebook from '../assets/img/face.svg'; // Facebook şəkli
+import { initializeApp } from 'firebase/app'; // Firebase-i başlatmaq üçün lazım olan funksiya
+import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth'; // Firebase autentifikasiya funksiyaları
+import { getAnalytics } from 'firebase/analytics'; // Firebase Analytics üçün funksiya
 
+// Firebase konfiqurasiyası
 const firebaseConfig = {
     apiKey: "AIzaSyAqsWZ5_ri2DBim6cgtMn2ir9w8t3XXa-8",
     authDomain: "fact-checking-asisstant.firebaseapp.com",
@@ -16,64 +17,67 @@ const firebaseConfig = {
     measurementId: "G-BLQXDLD0PP"
 };
 
-// Initialize Firebase
+// Firebase-i başlatmaq
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const auth = getAuth(app);
+const analytics = getAnalytics(app); // Firebase Analytics-i başlatmaq
+const auth = getAuth(app); // Firebase autentifikasiya obyektini əldə edirik
 
 const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
+    const [email, setEmail] = useState(''); // E-mail üçün state
+    const [password, setPassword] = useState(''); // Parol üçün state
+    const [error, setError] = useState(''); // Xətalar üçün state
+    const navigate = useNavigate(); // Yönləndirmə üçün navigate funksiyası
 
+    // Daxil olma funksiyası
     const handleLogin = async (e) => {
-        e.preventDefault();
-        setError('');
+        e.preventDefault(); // Formanın təkrardan yüklənməsinin qarşısını alır
+        setError(''); // Xətaları sıfırlayırıq
 
+        // E-mail və parol boş olmamalıdır
         if (!email || !password) {
             setError('Zəhmət olmasa e-poçtunuzu və parolunuzu daxil edin.');
             return;
         }
 
         try {
-            const response = await fetch('https://jsonplaceholder.typicode.com/users');
-            const users = await response.json();
-            const user = users.find((user) => user.email === email);
+            const response = await fetch('https://jsonplaceholder.typicode.com/users'); // İstifadəçiləri JSONPlaceholder API-dən alırıq
+            const users = await response.json(); // JSON formatında istifadəçi məlumatlarını alırıq
+            const user = users.find((user) => user.email === email); // E-poçt ilə istifadəçini tapırıq
 
+            // İstifadəçi tapıldısa, onu localStorage-a qeyd edirik və uğurlu daxil olma bildirişi göstəririk
             if (user) {
                 localStorage.setItem('authToken', `fake-token-for-${user.email}`);
                 alert('Daxil olma uğurlu oldu!');
-                navigate('/textinput');
+                navigate('/textinput'); // Daxil olma uğurlu olduqda axtarış səhifəsinə yönləndiririk
             } else {
                 throw new Error('İstifadəçi tapılmadı. E-poçtunuzu yoxlayın.');
             }
         } catch (err) {
-            setError(err.message);
+            setError(err.message); // Xətanı göstəririk
         }
     };
 
     // Google ilə daxil olma funksiyası
     const handleGoogleSignIn = async () => {
-        const provider = new GoogleAuthProvider();
+        const provider = new GoogleAuthProvider(); // Google provider-ni yaradıq
         try {
-            const result = await signInWithPopup(auth, provider);
-            alert('Google ilə daxil oldunuz!');
-            navigate('/textinput');
+            const result = await signInWithPopup(auth, provider); // Google ilə daxil olma prosesi
+            alert('Google ilə daxil oldunuz!'); // Uğurlu daxil olma bildirişi
+            navigate('/textinput'); // Daxil olduqdan sonra axtarış səhifəsinə yönləndiririk
         } catch (error) {
-            setError(error.message);
+            setError(error.message); // Xətanı göstəririk
         }
     };
 
     // Facebook ilə daxil olma funksiyası
     const handleFacebookSignIn = async () => {
-        const provider = new FacebookAuthProvider();
+        const provider = new FacebookAuthProvider(); // Facebook provider-ni yaradıq
         try {
-            const result = await signInWithPopup(auth, provider);
-            alert('Facebook ilə daxil oldunuz!');
-            navigate('/textinput');
+            const result = await signInWithPopup(auth, provider); // Facebook ilə daxil olma prosesi
+            alert('Facebook ilə daxil oldunuz!'); // Uğurlu daxil olma bildirişi
+            navigate('/textinput'); // Daxil olduqdan sonra axtarış səhifəsinə yönləndiririk
         } catch (error) {
-            setError(error.message);
+            setError(error.message); // Xətanı göstəririk
         }
     };
 
@@ -93,7 +97,7 @@ const Login = () => {
                                     placeholder='E-poçtunuzu bura daxil edin'
                                     className="w-full text-sm font-medium font-['Inter'] leading-normal focus:outline-none focus:border-transparent"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) => setEmail(e.target.value)} // E-maili state-ə qeyd edirik
                                     required
                                 />
                             </div>
@@ -108,15 +112,16 @@ const Login = () => {
                                     placeholder='************'
                                     className="w-full text-sm font-medium font-['Inter'] leading-normal focus:outline-none focus:border-transparent"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) => setPassword(e.target.value)} // Parolu state-ə qeyd edirik
                                     required
                                 />
                             </div>
                         </div>
 
-                        {error && <p className="text-red-500 text-sm my-2">{error}</p>}
+                        {error && <p className="text-red-500 text-sm my-2">{error}</p>} {/* Xətanı göstəririk */}
                         <Link to='/forgetpassword'><p className='font-medium text-base leading-normal my-6 text-center font-montserrat'>Parolu unutmusan?</p></Link>
 
+                        {/* Daxil ol düyməsi */}
                         <button
                             type="submit"
                             className='py-[19px] w-full bg-blue text-white rounded-[24px] text-base leading-[19px] font-semibold font-montserrat mb-[43px]'
@@ -136,14 +141,14 @@ const Login = () => {
                     <a
                         className='flex items-center justify-center'
                         href="#"
-                        onClick={handleGoogleSignIn}
+                        onClick={handleGoogleSignIn} // Google ilə daxil olma funksiyasını çağırırıq
                     >
                         <img className='size-[48px]' src={google} alt="google" />
                     </a>
                     <a
                         className='flex items-center justify-center'
                         href="#"
-                        onClick={handleFacebookSignIn}
+                        onClick={handleFacebookSignIn} // Facebook ilə daxil olma funksiyasını çağırırıq
                     >
                         <img className='size-[48px]' src={facebook} alt="facebook" />
                     </a>

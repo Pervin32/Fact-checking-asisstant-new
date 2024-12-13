@@ -1,84 +1,146 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, Link } from 'react-router-dom';
+import logo from '@/assets/img/logo_dashboard.svg';
+import pen from '@/assets/img/pen.svg';
 import enter from '@/assets/img/enter.svg';
-import search from '@/assets/img/search.svg';
-import { Link, useNavigate } from 'react-router-dom';
 
-const Text_Input = ({ addSearchToHistory, username }) => {
-  const [searchText, setSearchText] = useState(''); // Axtarış mətni üçün state
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const handleSearch = () => {
-    if (searchText.trim() === '') return; // Mətni boşdursa, axtarış etmə
-    setLoading(true);
-
-    addSearchToHistory(searchText); // Axtarış tarixçəsinə əlavə et
-    
-    // Keçid ediləcək məlumatlar
-    const loadingData = {
-      searchText,
-      score: 85,
-      sources: [
-        { title: 'Rəsmi Qurumlar', score: 30, description: 'Rəsmi dövlət qurumlarına istinad edilmişdir.' },
-        { title: 'Ekspert Rəyi', score: 18, description: 'Etibarlı ekspertlərin rəyi mövcuddur.' },
-        { title: 'Statistika', score: 16, description: 'Etibarlı statistika istifadə olunmuşdur.' },
-      ],
-      recommendations: [
-        'Daha etibarlı mənbələr istifadə edin.',
-        'Şəxslərin rəylərinə diqqət yetirin.',
-        'Sosial mediadan məlumatları ehtiyatla istifadə edin.'
-      ]
-    };
-
-    // `/result` səhifəsinə yönləndirmə, loadingData ilə birlikdə
-    navigate('/result', { state: loadingData });
-  };
-
-  const handleKeyPress = (event) => {
-    if (event.key === 'Enter') {
-      navigate('/loading'); // Navigate to loading page when Enter is pressed
-    }
-  };
-
-  return (
-    <div>
-      {/* Üst butonlar */}
-      <div className="flex justify-end gap-6 pt-10 pr-8">
-        {username ? (
-          <div className="bg-blue w-[100px] sm:w-[168px] h-9 text-white rounded-full text-center text-sm sm:text-base leading-[30px] flex items-center justify-center">
-            {username}
-          </div>
-        ) : (
-          <Link
-            to="/loading"
-            className="bg-blue w-[100px] sm:w-[168px] h-9 text-white rounded-full text-center text-sm sm:text-base leading-[30px] flex items-center justify-center"
-          >
-            A
-          </Link>
-        )}
-        <Link to="/registration" >
-        <img src={enter} alt="enter" className="size-8 md:size-9" /> </Link>
-      </div>
-      {/* Search */}
-      <div className="max-w-[744px] w-full h-12 sm:h-[52px] flex items-center justify-between mx-auto mt-[150px] sm:mt-[375px] border px-4 sm:px-6 rounded-lg sm:rounded-[16px] text-[#8D8D8D]">
-        <input
-          type="text"
-          placeholder="İnformasiya və ya keçid linkini bura daxil edin!"
-          className="w-full text-sm sm:text-lg leading-6 outline-none"
-          value={searchText} // Axtarış mətni state-ə bağlı
-          onChange={(e) => setSearchText(e.target.value)} // Mətni dəyişdikdə yeniləyir
-          onKeyDown={handleKeyPress} // Enter düyməsinə basıldıqda loading page-ə keçir
-        />
-        <div
-          className="bg-[#959595] w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center cursor-pointer"
-          onClick={handleSearch} // Axtarış düyməsinə basıldıqda handleSearch çağırılır
-        >
-          <img src={search} alt="search" className="w-4 h-4 sm:w-5 sm:h-5" />
-        </div>
-      </div>
-    </div>
-  );
+const getCategoryScore = (score) => {
+    if (score === 0) return 'text-black';
+    if (score >= 80) return 'text-green-500';
+    if (score >= 60) return 'text-yellow-500';
+    return 'text-red-500';
 };
 
+const getDateCategory = (date) => {
+    const today = new Date();
+    const searchDate = new Date(date);
+    const daysDiff = (today - searchDate) / (1000 * 60 * 60 * 24);
 
-export default Text_Input;
+    if (daysDiff <= 7) return 'Son 7 gün';
+    if (daysDiff <= 30) return 'Son 30 gün';
+
+    return `${searchDate.toLocaleString('default', { month: 'long' })} ${searchDate.getFullYear()}`;
+};
+
+const Result = ({ searchHistory = [] }) => {
+    const location = useLocation();
+    const [groupedHistory, setGroupedHistory] = useState({});
+    const [latestSearch, setLatestSearch] = useState({ text: null, url: null });
+    const [score, setScore] = useState(location.state?.score || 0);
+    const [apiResponse, setApiResponse] = useState(null);
+
+    useEffect(() => {
+        const fetchFactCheck = async () => {
+            try {
+                const searchText = location.state?.searchText || "";
+
+                // New API request using the provided URL
+                const response = await fetch('https://fact-checking-assistant.onrender.com/factcheck', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ fact: searchText }),
+                });
+                
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                setApiResponse(data);
+                setScore(data.score || 0); // Update score based on the API response
+            } catch (error) {
+                console.error('Full error details:', error);
+                setScore(50); // Default score added in case of failure
+            }
+        };
+
+        if (Array.isArray(searchHistory) && searchHistory.length > 0) {
+            const grouped = searchHistory.reduce((acc, item) => {
+                const category = getDateCategory(item.date);
+                acc[category] = acc[category] || [];
+                acc[category].push(item);
+                return acc;
+            }, {});
+            setGroupedHistory(grouped);
+
+            const allSearches = Object.values(grouped).flat();
+            const latest = allSearches[allSearches.length - 1];
+            setLatestSearch({ text: latest.text, url: latest.url });
+        }
+
+        fetchFactCheck();
+    }, [searchHistory, location.state]);
+
+    return (
+        <div className="md:grid md:grid-cols-[268px_1fr] h-screen">
+            <aside className="p-4 md:p-9 border md:border-r border-[#C8C8C8] md:h-screen">
+                <div className="flex items-center justify-between mb-6 md:mb-12">
+                    <Link to="/">
+                        <img src={logo} alt="logo" className="w-[100px] md:w-[129px] h-[35px] md:h-[45px]" />
+                    </Link>
+                    <Link to="/textinput">
+                        <img src={pen} alt="pen" className="w-5 h-5 md:w-6 md:h-6" />
+                    </Link>
+                </div>
+
+                <div className="pr-2 md:pr-[23px] overflow-hidden">
+                    {Object.keys(groupedHistory).length ? (
+                        Object.keys(groupedHistory).map((category, index) => (
+                            <div key={index}>
+                                <h3 className="font-bold mb-2 text-sm">{category}</h3>
+                                <ul className="space-y-2 mb-4 md:mb-6">
+                                    {groupedHistory[category].map((item, idx) => (
+                                        <li key={idx} className="p-2 rounded-md cursor-pointer">
+                                            <p className="text-xs md:text-sm text-ellipsis overflow-hidden whitespace-nowrap">
+                                                {item.text}
+                                            </p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-xs md:text-sm">
+                            {location.state?.searchText || "Hələ axtarış yoxdur."}
+                        </p>
+                    )}
+                </div>
+            </aside>
+
+            <div className="grid grid-rows">
+                <section className="flex justify-end gap-4 pt-4 pr-4 md:pt-10 md:pr-8 bg-white">
+                    <Link to="/result" className="bg-blue w-[80px] md:w-[100px] lg:w-[168px] h-8 md:h-9 text-white rounded-full text-center text-xs md:text-sm lg:text-base flex items-center justify-center">
+                        A
+                    </Link>
+                    <Link to="/registration">
+                        <img src={enter} alt="enter" className="size-8 md:size-9" />
+                    </Link>
+                </section>
+
+                <div className="flex flex-col text-center min-h-screen p-6">
+                    <div className="mt-[74px] text-center w-[246px] h-[27px] rounded-[17px] mx-auto bg-red-400 "></div>
+                    <div className="mb-12 mt-[53px] flex flex-col justify-center items-center text-center">
+                        <div className={`font-semibold border-t border-black w-[234px] text-5xl leading-[72px] mx-auto pt-[19px] ${getCategoryScore(score)}`}>
+                            {score}
+                        </div>
+                        <h2 className="text-xl font-semibold mb-2">Ümumi bal</h2>
+                        <div className="mt-4 p-2 rounded-md text-center">
+                            <p className="text-sm font-normal text-[15px] leading-6 w-[576px]">
+                                {location.state?.searchText || latestSearch.text || "Daxil etdiyin mətn/link rəsmi dövlət qurumlarına, hökumət saytlarına, qanunvericilik orqanlarına və ya digər dövlət müəssisələrinə istinad edib deyə faktları etibarlı edir. Məqalədə etibarlı şəxslərdən, mövzu ilə əlaqəli mütəxəssislərin fikirlərinə yer verilib. Amma son abzasda sosial mediaya istinad edilməsi və verilmiş rəqəmlərin rəsmi mənbələrdən olmaması bəzi faktları şübhə altına ala bilir. Buna görə, diqqətli olmanı tövsiyə edirik."}
+                            </p>
+                            {latestSearch.url && (
+                                <a href={latestSearch.url} className="text-blue-500 text-xs md:text-sm mt-1 block">
+                                    {latestSearch.url}
+                                </a>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Result;
