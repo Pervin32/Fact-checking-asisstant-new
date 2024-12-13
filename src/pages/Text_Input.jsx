@@ -10,43 +10,41 @@ const Text_Input = ({ addSearchToHistory, username }) => {
 
   const handleSearch = async () => {
     if (searchText.trim() === '') return; // Boş mətni yoxlayır
-  
+
     try {
       setIsLoading(true);
-  
-      // Proxy'dən keçən API sorğusu
-      const response = await fetch('http://localhost:3000/factcheck', { // Proxy server URL
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ fact: searchText }),
-      });
-  
-      const apiData = await response.json();
-  
-      // Hazırlanan məlumatlar API cavabına əsasən
-      const loadingData = {
-        searchText,
-        score: apiData.score,
+
+      // Mock API response ( data)
+      const mockApiResponse = {
+        score: 0,
         sources: [
-          { title: 'Fact Check API', score: apiData.score, description: 'Automated fact-checking result' },
+          { title: 'API', score: 0, description: 'Simulated fact-check result' },
         ],
         recommendations: [
-          'Verify the information from multiple sources',
-          'Check the credibility of the original source',
-          'Consult expert opinions',
+          'Cross-check with other trusted sources',
+          'Look for expert opinions',
         ],
       };
-  
-      // Axtarışı tarixçəyə əlavə etmək
-      addSearchToHistory(searchText);
-  
-      // Yönləndirmə /result səhifəsinə
-      navigate('/result', { state: loadingData });
+
+      // Simulate delay to mimic real API call
+      setTimeout(() => {
+        // Hazırlanan məlumatlar API cavabına əsasən
+        const loadingData = {
+          searchText,
+          score: mockApiResponse.score,
+          sources: mockApiResponse.sources,
+          recommendations: mockApiResponse.recommendations,
+        };
+
+        // Axtarışı tarixçəyə əlavə etmək
+        addSearchToHistory(searchText);
+
+        // Yönləndirmə /result səhifəsinə
+        navigate('/result', { state: loadingData });
+      }, 3000); // Simulate a 1-second delay
     } catch (error) {
-      console.error('Fact checking error:', error);
-  
+      console.error('Error in mock API:', error);
+
       // Fallback error handling
       const loadingData = {
         searchText,
@@ -60,13 +58,13 @@ const Text_Input = ({ addSearchToHistory, username }) => {
           'Verify information manually',
         ],
       };
-  
+
       navigate('/result', { state: loadingData });
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
       handleSearch();

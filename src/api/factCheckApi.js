@@ -1,23 +1,20 @@
-// src/api/factCheckApi.js
-
 export const checkFact = async (fact) => {
   try {
-    const response = await fetch('https://fact-checking-assistant.onrender.com/factcheck', {
+    const response = await fetch('/factcheck', { // Nisbi URL
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ fact }),
+      body: JSON.stringify({ fact })
     });
 
     if (!response.ok) {
-      throw new Error('API request failed');
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Fact checking error:', error);
     return null;
   }
 };

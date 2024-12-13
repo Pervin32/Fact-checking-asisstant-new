@@ -59,7 +59,6 @@ const Text_Input = ({ addSearchToHistory, username }) => {
         <Link to="/registration" >
         <img src={enter} alt="enter" className="size-8 md:size-9" /> </Link>
       </div>
-
       {/* Search */}
       <div className="max-w-[744px] w-full h-12 sm:h-[52px] flex items-center justify-between mx-auto mt-[150px] sm:mt-[375px] border px-4 sm:px-6 rounded-lg sm:rounded-[16px] text-[#8D8D8D]">
         <input
@@ -80,5 +79,6 @@ const Text_Input = ({ addSearchToHistory, username }) => {
     </div>
   );
 };
+
 
 export default Text_Input;
